@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="description" content="A suite of browser-based tools for 2nd Edition Pathfinder for both players and Gamemasters.">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>PFTools</title>
+		<link rel="stylesheet" href="style/style.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+		<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+	</head>
+	<body>
+		<div class="content">
+			<h1 class="header">PF Tools</h1>
+			<p>A web-based suite of tools for use with 1st Edition of Pathfinder for both players and Game Masters.</p>
+			<table border=0 width=75% style="margin:0 auto;">
+				<tr>
+					<td colspan="4" style="padding-bottom:20px;"><u>Players</u></td>
+				</tr>
+				<tr>
+					<td><a href="races.html" class="button">Races</a></td>
+					<td><a href="classes.html" class="button">Classes</a></td>
+					<td><a href="equipment.html" class="button">Equipment</a></td>
+					<td><a href="spells.html" class="button">Spells</a></td>
+				</tr>
+				<tr>
+					<td colspan="4" style="padding-top:20px;padding-bottom:20px;"><u>Game Masters</u></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td><a href="bestiary.html" class="button">Bestiary</a></td>
+					<td><a href="gmscreen.html" class="button">GM Screen</a></td>
+					<td></td>
+				</tr>
+			</table>
+			<br />
+			<br />
+		</div>
+		<div class="rollbox-min">
+			<span class="glyphicon glyphicon-chevron-up"></span>
+		</div>
+		<div class="rollbox hidden">
+			<div class="head-roll">
+				<span class="hdr-roll">Dice Roller</span>
+				<span class="delete-icon glyphicon glyphicon-remove"></span>
+			</div>
+			<div class="out-roll"></div>
+			<input class="ipt-roll" autocomplete="off" spellcheck="false" placeholder="3d6-1 or &quot;/help&quot;">
+		</div>
+		<script type="text/javascript" src="scripts/dice.js"></script>
+	</body>
+</html>
