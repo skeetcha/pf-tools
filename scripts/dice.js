@@ -209,9 +209,57 @@ function parseMacro(macro) {
 	}
 }
 
-$("input.ipt-roll").keypress(function(e) {
+$("input.ipt-roll").keydown(function(e) {
 	if (e.which == 13) {
+		// Enter key
 		processInput($("input.ipt-roll").val());
+
+		if (sessionStorage.getItem("diceHistory") == null) {
+			sessionStorage.setItem("diceHistory", '{"history": [' + $("input.ipt-roll").val() + ']}')
+		} else {
+			var diceHistory = JSON.parse(sessionStorage.getItem("diceHistory"));
+			diceHistory.history.push($("input.ipt-roll").val());
+			sessionStorage.setItem("diceHistory", JSON.stringify(diceHistory));
+		}
+
 		$("input.ipt-roll").val("");
+	} else if (e.which == 38) {
+		// Up arrow key
+
+		if (sessionStorage.getItem("diceHistory") != null) {
+			var diceHistory = JSON.parse(sessionStorage.getItem("diceHistory"));
+
+			if (Object.keys(diceHistory).indexOf("historyID") < 0) {
+				diceHistory.historyID = diceHistory.history.length - 1;
+			} else {
+				if (diceHistory.historyID > 0) {
+					diceHistory.historyID -= 1;
+				}
+			}
+
+			$("input.ipt-roll").val(diceHistory.history[diceHistory.historyID]);
+			sessionStorage.setItem("diceHistory", JSON.stringify(diceHistory));
+		}
+	} else if (e.which == 40) {
+		// Down arrow key
+
+		if (sessionStorage.getItem("diceHistory") != null) {
+			var diceHistory = JSON.parse(sessionStorage.getItem("diceHistory"));
+			var clear = false;
+
+			if ((Object.keys(diceHistory).indexOf("historyID") >= 0) && (diceHistory.historyID < (diceHistory.history.length - 1))) {
+				diceHistory.historyID += 1;
+			} else if ((Object.keys(diceHistory).indexOf("historyID") >= 0) && (diceHistory.historyID == (diceHistory.history.length - 1))) {
+				clear = true;
+			}
+
+			if (clear) {
+				$("input.ipt-roll").val("");
+			} else {
+				$("input.ipt-roll").val(diceHistory.history[diceHistory.historyID]);
+			}
+			
+			sessionStorage.setItem("diceHistory", JSON.stringify(diceHistory));
+		}
 	}
 });

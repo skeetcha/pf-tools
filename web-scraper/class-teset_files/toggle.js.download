@@ -1,0 +1,45 @@
+function initiateToggle(el) {
+    el.addEventListener("change", toggleTheme);
+    if (currentTheme() === "dark") {
+        goDark();
+    } else {
+        el.checked = true;
+        goLight();
+    }
+}
+
+function toggleTheme() {
+  if (currentTheme() === "dark") {
+    goLight();
+  } else if (currentTheme() === "light") {
+    goDark();
+  }
+}
+
+function currentTheme() {
+    var name = "theme=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1);
+        if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+    }
+    return "dark";
+}
+
+function goLight() {
+    document.getElementsByTagName("body")[0].className = document.getElementsByTagName("body")[0].className.replace(/(?:^|\s)dark(?!\S)/g, 'light');
+    document.cookie = "theme=light; Expires=" + expiryTime() + ";";
+}
+
+function goDark() {
+    document.getElementsByTagName("body")[0].className = document.getElementsByTagName("body")[0].className.replace(/(?:^|\s)light(?!\S)/g, 'dark');
+    document.cookie = "theme=dark;" + expiryTime() + ";";
+}
+
+function expiryTime() {
+    var d = new Date();
+    d.setTime(d.getTime() + (500 * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    return expires;
+}
