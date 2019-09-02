@@ -1,63 +1,51 @@
 import requests
 import re
+from bs4 import BeautifulSoup
 import time
-import json
 import sys
 
 def main():
 	raceCategories = ['Core', 'NonCore']
 
-	for category in raceCategories:
-		response = requests.get(f'https://aonprd.com/Races.aspx?Category={category}')
+	jsonData = {}
 
-		if response.status_code != 200:
-			print(f'Response status code was not 200.\n{response.status_code}\n{response.content.decode("utf-8")}')
+	for raceCategory in raceCategories:
+		raceCategoryResponse = requests.get(f'https://aonprd.com/Races.aspx?Category={raceCategory}')
+
+		if raceCategoryResponse.status_code != 200:
+			print(f'Response status code was not 200.\n{raceCategoryResponse.status_code}\n{raceCategoryResponse.content.decode("utf-8")}')
 			sys.exit(1)
 
-		data = response.content.decode('utf-8')
-		jsonData = {'classes': []}
-		races = re.findall(r'<b><img src="\S+" title="[\S ]+" style="[\S ]+">([\S ]+)</a></b>', data)
+		raceCategoryData = raceCategoryResponse.content.decode('utf-8')
+		raceCategorySoup = BeautifulSoup(raceCategoryData)
 
-		if len(races) == 0:
-			print(f'Could not find {category} races.')
-			sys.exit(2)
+		if 'races' not in jsonData.keys():
+			jsonData['races'] = []
 
-		for race in races:
-			newRace = {}
-			newRace['name'] = race.strip()
+		for i in raceCategorySoup.find_all('a'):
+			raceRe = re.search(r'[A-z]+\.[a-z]+\?ItemName=([A-z\-]+)', i.get('href'))
 
-			raceResponse = requests.get(f'https://aonprd.com/RacesDisplay.aspx?ItemName={race.strip()}')
-
-			if raceResponse.status_code != 200:
-				print(f'Response status code was not 200.\n{raceResponse.status_code}\n{raceResponse.content.decode("utf-8")}')
-				sys.exit(3)
-
-			raceData = raceResponse.content.decode('utf-8')
-			oneSource = re.search(r'<b>Source</b>\s*<a\s*(?:href="\S+")?\s*(?:target="\S+")?\s*(?:class="\S+")?>(?:<i>)?([A-z ]+)\s*pg\.\s*(\d+)(?:</i>)?</a>', raceData)
-			twoSources = re.search(r'<b>Source</b>\s*<a\s*(?:href="\S+")?\s*(?:target="\S+")?\s*(?:class="\S+")?>(?:<i>)?([A-z ]+)\s*pg\.\s*(\d+)(?:</i>)?</a>,\s*<a (?:href="\S+")?\s*(?:target="\S+")?\s*(?:class="\S+")?>(?:<i>)?([A-z ]+)\s*pg\.\s*(\d+)(?:</i>)?</a>', raceData)
-			threeSources = re.search(r'<b>Source</b>\s*<a\s*(?:href="\S+")?\s*(?:target="\S+")?\s*(?:class="\S+")?>(?:<i>)?([A-z ]+)\s*pg\.\s*(\d+)(?:</i>)?</a>,\s*<a (?:href="\S+")?\s*(?:target="\S+")?\s*(?:class="\S+")?>(?:<i>)?([A-z ]+)\s*pg\.\s*(\d+)(?:</i>)?</a>,\s*<a\s*(?:href="\S+")?\s*(?:target="\S+")?\s*(?:class="\S+")?>(?:<i>)?([A-z ]+)\s*pg\.\s*(\d+)(?:</i>)?</a>', raceData)
-			info = re.search(r'</a><br>([A-z ,\.]+)(?:&nbsp;<br><br>\s*([A-z ,\-\.;\']+)(?:&nbsp;<br><br>\s*([A-z ,\.\-]+)(?:&nbsp;<br><br>\s*([A-z ,\.]+))?)?)?', raceData)
-			newRace['sources'] = []
-
-			if threeSources:
-				newRace.get('sources').append({'book': threeSources.group(1).strip(), 'page': int(threSources.group(2))})
-				newRace.get('sources').append({'book': threeSources.group(3).strip(), 'page': int(threSources.group(4))})
-				newRace.get('sources').append({'book': threeSources.group(5).strip(), 'page': int(threeSources.group(6))})
-			elif twoSources and not threeSources:
-				newRace.get('sources').append({'book': twoSources.group(1).strip(), 'page': int(twoSources.group(2))})
-				newRace.get('sources').append({'book': twoSources.group(3).strip(), 'page': int(twoSources.group(4))})
-			elif oneSource and not twoSources and not threeSources:
-				newRace.get('sources').append({'book': oneSource.group(1).strip(), 'page': int(oneSource.group(2))})
-
-			'''if not info:
-				print(f'Info not found.\n{race.strip()}')
-				sys.exit(5)'''
-
-			breakpoint()
+			if raceRe:
+				newRace = getRaceData(raceRe.group(1))
 
 			time.sleep(5)
 
 		time.sleep(5)
+
+def getRaceData(race):
+	raceResponse = requests.get(f'https://aonprd.com/RacesDisplay.aspx?ItemName={race}')
+
+	if raceResponse.status_code != 200:
+		print(f'Response status code was not 200.\n{raceResponse.status_code}\n{raceResponse.content.decode("utf-8")}')
+		sys.exit(2)
+
+	raceData = raceResponse.content.decode('utf-8')
+	raceSoup = BeautifulSoup(raceData)
+
+	newRace = {}
+
+	row = raceSoup.table.tr.td
+	data = str(row).split('<br/>')
 
 if __name__ == '__main__':
 	main()
