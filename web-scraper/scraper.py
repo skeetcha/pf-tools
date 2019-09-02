@@ -47,5 +47,79 @@ def getRaceData(race):
 	row = raceSoup.table.tr.td
 	data = str(row).split('<br/>')
 
+	# data[0] - Sources
+	sourceSoup = BeautifulSoup(data[0])
+
+	for i in sourceSoup.find_all('a'):
+		sourceRe = re.search(r'([A-z ]+) pg. (\d+)', sourceSoup.find_all('a')[0].i.string)
+
+		if sourceRe:
+			if 'sources' not in newRace.keys():
+				newRace['sources'] = []
+
+			newRaces.get('sources').append({'book': sourceRe.group(1), 'page': int(sourceRe.group(2))})
+
+	# data[1:X] - Background Info
+	i = 1
+
+	while True:
+		if 'Physical Description' in data[i]:
+			break
+
+		if data[i]:
+			if 'info' not in newRace.keys():
+				newRace['info'] = []
+
+			newRace.get('info').append(data[i].strip())
+
+		i += 1
+
+	# data[X + 1] - Physical Description
+	newRace['descriptions'] = {}
+	newRace.get('descriptions')['physical'] = re.sub(r'<b>Physical Description</b>: *', '', data[i]).strip()
+	i += 1
+
+	if not data[i]:
+		i += 1
+
+	# data[X + 2] - Society Description
+	newRace.get('descriptions')['society'] = re.sub(r'<b>Society</b>: *', '', data[i]).strip()
+	i += 1
+
+	if not data[i]:
+		i += 1
+
+	# data[X + 3] - Relations
+	newRace.get('descriptions')['relations'] = re.sub(r'<b>Relations</b>: *', '', data[i]).strip()
+	i += 1
+
+	if not data[i]:
+		i += 1
+
+	# data[X + 4] - Alignment and Religion
+	newRace.get('descriptions')['alrelig'] = re.sub(r'<b>Alignment and Religion</b>: *', '', data[i]).strip()
+	i += 1
+
+	if not data[i]:
+		i += 1
+
+	# data[X + 5] - Adventurers
+	newRace.get('descriptions')['adventurers'] = re.sub(r'<b>Adventurers</b>: *', '', data[i]).strip()
+	i += 1
+
+	if not data[i]:
+		i += 1
+
+	# data[X + 6] - Male Names
+	newRace['names'] = {}
+	newRace.get('names')['male'] = re.sub(r'<b>Males Names</b>: *', '', data[i]).strip().replace('.', '').split(', ')
+	i += 1
+
+	if not data[i]:
+		i += 1
+
+	# data[X + 7] - Female Names
+	newRace.get('names')['female'] = re.sub(r'<b>Female Names</b>: *', '', data[i]).strip().replace('.', '').split(', ') # There's a bit more info in this index of data, parse that cause it's needed
+
 if __name__ == '__main__':
 	main()
