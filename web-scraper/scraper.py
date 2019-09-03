@@ -119,7 +119,34 @@ def getRaceData(race):
 		i += 1
 
 	# data[X + 7] - Female Names
-	newRace.get('names')['female'] = re.sub(r'<b>Female Names</b>: *', '', data[i]).strip().replace('.', '').split(', ') # There's a bit more info in this index of data, parse that cause it's needed
+	newRace.get('names')['female'] = re.sub(r'<b>Female Names</b>: *', '', data[i]).strip().split('.')[0].split(', ')
+
+	# data[X + 7] - Ability Score Modifiers
+	amods = re.findall(r'(\+|\u2013|\-)(\d+) *([A-z]+)', BeautifulSoup(data[i].replace(data[i].split('.')[0], '')[1:]).b.string)
+
+	if not amods:
+		print(f'Ability modifiers not found.\n{data[i].replace(data[i].split(".")[0], "")[1:]}')
+		sys.exit(2)
+
+	for mod in amods:
+		if 'abilityMods' not in newRace.keys():
+			newRace['abilityMods'] = []
+
+		if ord(mod[0]) == 8211:
+			newRace.get('abilityMods').append({'mod': int(mod[1]) * -1, 'ability': mod[2]})
+		else:
+			newRace.get('abilityMods').append({'mod': int(mod[1]), 'ability': mod[2]})
+
+	# data[X + 7] - Ability Score Modifier Description
+	desc = re.search(r'<b>[A-z\+\d ,–]+</b>: *([A-z ,\.]+)', data[i].replace(data[i].split('.')[0], '')[1:])
+
+	if not desc:
+		print(f'Ability modifier description not found.\n{data[i].replace(data[i].split(".")[0], "")[1:]}')
+		sys.exit(3)
+
+	newRace['traits'] = {}
+
+	newRace.get('traits')['abilityMod'] = desc.group(1)
 
 if __name__ == '__main__':
 	main()
