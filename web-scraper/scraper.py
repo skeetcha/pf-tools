@@ -128,14 +128,16 @@ def getRaceData(race):
 		print(f'Ability modifiers not found.\n{data[i].replace(data[i].split(".")[0], "")[1:]}')
 		sys.exit(2)
 
+	newRace['traits'] = {}
+
 	for mod in amods:
-		if 'abilityMods' not in newRace.keys():
-			newRace['abilityMods'] = []
+		if 'abilityMods' not in newRace.get('traits').keys():
+			newRace.get('traits')['abilityMods'] = []
 
 		if ord(mod[0]) == 8211:
-			newRace.get('abilityMods').append({'mod': int(mod[1]) * -1, 'ability': mod[2]})
+			newRace.get('traits').get('abilityMods').append({'mod': int(mod[1]) * -1, 'ability': mod[2]})
 		else:
-			newRace.get('abilityMods').append({'mod': int(mod[1]), 'ability': mod[2]})
+			newRace.get('traits').get('abilityMods').append({'mod': int(mod[1]), 'ability': mod[2]})
 
 	# data[X + 7] - Ability Score Modifier Description
 	desc = re.search(r'<b>[A-z\+\d ,–]+</b>: *([A-z ,\.]+)', data[i].replace(data[i].split('.')[0], '')[1:])
@@ -144,9 +146,30 @@ def getRaceData(race):
 		print(f'Ability modifier description not found.\n{data[i].replace(data[i].split(".")[0], "")[1:]}')
 		sys.exit(3)
 
-	newRace['traits'] = {}
-
 	newRace.get('traits')['abilityMod'] = desc.group(1)
+	i += 1
+
+	# data[X + Y - 1] - Other Racial Traits
+	while True:
+		if 'Subraces' in data[i]:
+			break
+
+		traitRe = re.search(r'<b>([A-z ]+)</b>: *([A-z ,“”\.\+\d\-:]+)', data[i])
+
+		if not traitRe:
+			print(f'Invalid trait entry.\n{data[i]}')
+			sys.exit(4)
+
+		newRace.get('traits')[traitRe.group(1)] = traitRe.group(2)
+		i += 1
+
+	traitRe = re.search(r'<b>([A-z ]+)</b>: *([A-z ,“”\.\+\d\-:]+)', data[i])
+
+	if not traitRe:
+		print(f'Invalid trait entry.\n{data[i]}')
+		sys.exit(5)
+
+	newRace.get('traits')[traitRe.group(1)] = traitRe.group(2)
 
 if __name__ == '__main__':
 	main()
